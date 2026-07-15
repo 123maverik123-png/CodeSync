@@ -1,34 +1,31 @@
 # 🚀 CodeSync - AI Code Synchronizer
 
-**CodeSync** is a universal tool that automatically creates files and folders from code received in AI chats (DeepSeek, ChatGPT, Claude, Gemini, etc.).
+**Universal tool that creates files and folders from AI chat responses (DeepSeek, ChatGPT, Claude, Gemini)**
 
-## 🎯 Why CodeSync?
+[![Python](https://img.shields.io/badge/Python-3.6%2B-blue)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen)]()
 
-When you chat with AI and receive code, instead of:
-- ❌ Manually creating each file
-- ❌ Copy-pasting code piece by piece
-- ❌ Creating folders by hand
-- ❌ Wasting time on project structure
+---
 
-Just:
-- ✅ Copy the **entire AI response** from chat
-- ✅ Paste it into CodeSync
-- ✅ Click one button
-- ✅ All files are created automatically!
+## ✨ Features
+
+- 📂 **Auto-create folders** - no manual setup
+- 📄 **Multi-file support** - create all files at once
+- 🧹 **Smart cleaning** - removes `---`, ` ``` `, quotes
+- 🌐 **Bilingual UI** - English / Русский
+- ⚡ **One click** - paste → detect → create
+- 🔧 **Custom path** - save anywhere
+
+---
 
 ## 🚀 Quick Start
 
-### Installation
 ```bash
 git clone https://github.com/your-username/codesync.git
 cd codesync
-```
-
-### Run
-```bash
 python server.py
 ```
-
 Usage
 
   1.  Open browser: http://localhost:8000
