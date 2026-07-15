@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeSync - AI Code Synchronizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0a1a;
+            color: #eee;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a2e;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        h1 { color: #e94560; font-size: 28px; }
+        .subtitle { color: #888; margin-bottom: 20px; font-size: 14px; }
+        .lang-switch {
+            display: flex;
+            gap: 8px;
+            background: #0f3460;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .lang-btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.3s;
+            background: transparent;
+            color: #888;
+        }
+        .lang-btn.active {
+            background: #e94560;
+            color: white;
+        }
+        .lang-btn:hover:not(.active) {
+            background: #16213e;
+            color: #eee;
+        }
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            background: #0f3460;
+            color: #a8d8ea;
+            border: 2px solid #16213e;
+            padding: 15px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            border-radius: 6px;
+            margin: 15px 0;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        textarea:focus {
+            outline: 2px solid #e94560;
+            border-color: transparent;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-success { background: #2ecc71; color: white; }
+        .btn-success:hover { background: #27ae60; }
+        .btn-primary { background: #e94560; color: white; }
+        .btn-primary:hover { background: #c73652; }
+        .btn-secondary { background: #3498db; color: white; }
+        .btn-secondary:hover { background: #2980b9; }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-warning:hover { background: #e67e22; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .input-group input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            background: #0f3460;
+            border: 2px solid #16213e;
+            color: #eee;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .input-group input:focus {
+            outline: 2px solid #e94560;
+            border-color: transparent;
+        }
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        .stat-item {
+            background: #0f3460;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .stat-item span { color: #e94560; font-weight: bold; }
+        .file-tree {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .file-tree .folder { color: #f1c40f; }
+        .file-tree .file { color: #2ecc71; }
+        .file-tree .empty { color: #666; margin-left: 20px; }
+        .file-tree .size { color: #888; font-size: 11px; margin-left: 10px; }
+        .status {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        .status .success { color: #2ecc71; }
+        .status .error { color: #e74c3c; }
+        .status .info { color: #3498db; }
+        .status .warning { color: #f39c12; }
+        .status .file { color: #f1c40f; }
+        .hint {
+            background: #16213e;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #aaa;
+            border-left: 3px solid #e94560;
+        }
+        .hint code {
+            background: #0a0a1a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #a8d8ea;
+        }
+        .checkbox-group {
+            margin: 10px 0;
+        }
+        .checkbox-group label {
+            color: #aaa;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        .hidden { display: none; }
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .btn { width: 100%; }
+            .header { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📁 CodeSync</h1>
+                <div class="subtitle" id="subtitle">AI Code Synchronizer - Create files from chat responses</div>
+            </div>
+            <div class="lang-switch">
+                <button class="lang-btn active" onclick="setLanguage('en')" id="langEn">English</button>
+                <button class="lang-btn" onclick="setLanguage('ru')" id="langRu">Русский</button>
+            </div>
+        </div>
+
+        <div class="hint" id="hint">
+            💡 <strong id="hintTitle">How to use:</strong><br>
+            <span id="hintText">1. Copy the <strong>ENTIRE</strong> AI response from chat (with <code>## File N:</code> markers)<br>
+            2. Paste it into the field below<br>
+            3. Click <strong>"🔍 Detect Files"</strong> to preview<br>
+            4. Click <strong>"💾 CREATE FILES"</strong></span>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="basePath" value="D:/my_project" placeholder="Save path" />
+            <button class="btn btn-secondary" onclick="setPath()" id="setPathBtn">📂 Set Path</button>
+        </div>
+
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="removeMarkdown" checked />
+                <span id="cleanLabel">🧹 Aggressive cleaning (removes ---, ```, quotes, extra lines)</span>
+            </label>
+        </div>
+
+        <textarea id="codeInput" placeholder="Paste the ENTIRE chat response here..."></textarea>
+
+        <div class="controls">
+            <button class="btn btn-success" onclick="saveFiles()" id="createBtn">💾 CREATE FILES</button>
+            <button class="btn btn-primary" onclick="detectFiles()" id="detectBtn">🔍 Detect Files</button>
+            <button class="btn btn-secondary" onclick="pasteClipboard()" id="pasteBtn">📋 Paste from Clipboard</button>
+            <button class="btn btn-warning" onclick="clearAll()" id="clearBtn">🗑️ Clear</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">📄 <span id="filesLabel">Files found:</span> <span id="fileCount">0</span></div>
+            <div class="stat-item">📁 <span id="foldersLabel">Folders:</span> <span id="folderCount">0</span></div>
+            <div class="stat-item">📝 <span id="charsLabel">Characters:</span> <span id="charCount">0</span></div>
+        </div>
+
+        <div class="file-tree" id="fileTree">
+            <div class="folder">📁 my_project/</div>
+            <div class="empty" id="waitingFiles">Waiting for files...</div>
+        </div>
+
+        <div class="status" id="status">
+            <div class="info" id="statusReady">▶ Ready. Paste code and click "Detect Files"</div>
+        </div>
+    </div>
+
+    <script>
+        // ============ LANGUAGE STRINGS ============
+        const strings = {
+            en: {
+                subtitle: 'AI Code Synchronizer - Create files from chat responses',
+                hintTitle: 'How to use:',
+                hintText: '1. Copy the <strong>ENTIRE</strong> AI response from chat (with <code>## File N:</code> markers)<br>2. Paste it into the field below<br>3. Click <strong>"🔍 Detect Files"</strong> to preview<br>4. Click <strong>"💾 CREATE FILES"</strong>',
+                setPathBtn: '📂 Set Path',
+                cleanLabel: '🧹 Aggressive cleaning (removes ---, ```, quotes, extra lines)',
+                createBtn: '💾 CREATE FILES',
+                detectBtn: '🔍 Detect Files',
+                pasteBtn: '📋 Paste from Clipboard',
+                clearBtn: '🗑️ Clear',
+                filesLabel: 'Files found:',
+                foldersLabel: 'Folders:',
+                charsLabel: 'Characters:',
+                waitingFiles: 'Waiting for files...',
+                statusReady: '▶ Ready. Paste code and click "Detect Files"',
+                noFiles: 'No files detected',
+                pastePrompt: 'Paste the ENTIRE chat response here...',
+                // Log messages
+                logPasteSuccess: 'Text pasted from clipboard',
+                logPasteError: 'Failed to paste from clipboard',
+                logPasteHint: 'Use Ctrl+V to paste',
+                logPathSet: 'Path set to:',
+                logCleared: 'All cleared',
+                logReady: '▶ Ready. Paste code and click "Detect Files"',
+                logNoText: 'Paste text into the field!',
+                logNoFiles: 'No files to save!',
+                logFileFound: 'Found:',
+                logDetected: 'files detected',
+                logSaving: 'Saving',
+                logFilesTo: 'files to',
+                logCreated: 'Created',
+                logOf: 'of',
+                logAllCreated: '🎉 ALL FILES CREATED SUCCESSFULLY!',
+                logCheckFolder: 'Check folder:',
+                logServerError: 'Server error',
+                logError: 'Error:',
+                logStartServer: 'Make sure server is running: python server.py',
+                logWrongFormat: 'No files found! Check format: ## File N: path/to/file',
+                logExample: 'Example: ## File 1: data/config.json',
+                logCleaning: 'Aggressive cleaning enabled',
+                logPreview: 'chars'
+            },
+            ru: {
+                subtitle: 'Синхронизация кода из чата с AI - Создание файлов из ответов',
+                hintTitle: 'Как использовать:',
+                hintText: '1. Скопируйте <strong>ВЕСЬ</strong> ответ AI из чата (с маркерами <code>## Файл N:</code>)<br>2. Вставьте в поле ниже<br>3. Нажмите <strong>"🔍 Определить файлы"</strong> для проверки<br>4. Нажмите <strong>"💾 СОЗДАТЬ ФАЙЛЫ"</strong>',
+                setPathBtn: '📂 Установить путь',
+                cleanLabel: '🧹 Агрессивная очистка (удаляет ---, ```, кавычки, лишние строки)',
+                createBtn: '💾 СОЗДАТЬ ФАЙЛЫ',
+                detectBtn: '🔍 Определить файлы',
+                pasteBtn: '📋 Вставить из буфера',
+                clearBtn: '🗑️ Очистить',
+                filesLabel: 'Найдено файлов:',
+                foldersLabel: 'Папок:',
+                charsLabel: 'Символов:',
+                waitingFiles: 'Ожидание файлов...',
+                statusReady: '▶ Готов. Вставьте код и нажмите "Определить файлы"',
+                noFiles: 'Нет файлов',
+                pastePrompt: 'Вставьте сюда ВЕСЬ ответ из чата...',
+                // Log messages
+                logPasteSuccess: 'Текст вставлен из буфера обмена',
+                logPasteError: 'Не удалось вставить из буфера',
+                logPasteHint: 'Используйте Ctrl+V для вставки',
+                logPathSet: 'Путь установлен:',
+                logCleared: 'Всё очищено',
+                logReady: '▶ Готов. Вставьте код и нажмите "Определить файлы"',
+                logNoText: 'Вставьте текст в поле!',
+                logNoFiles: 'Нет файлов для сохранения!',
+                logFileFound: 'Найден:',
+                logDetected: 'файлов найдено',
+                logSaving: 'Сохраняем',
+                logFilesTo: 'файлов в',
+                logCreated: 'Создано',
+                logOf: 'из',
+                logAllCreated: '🎉 ВСЕ ФАЙЛЫ УСПЕШНО СОЗДАНЫ!',
+                logCheckFolder: 'Проверьте папку:',
+                logServerError: 'Ошибка на сервере',
+                logError: 'Ошибка:',
+                logStartServer: 'Убедитесь, что сервер запущен: python server.py',
+                logWrongFormat: 'Не найдено файлов! Проверьте формат: ## Файл N: путь/к/файлу',
+                logExample: 'Пример: ## Файл 1: data/config.json',
+                logCleaning: 'Агрессивная очистка включена',
+                logPreview: 'симв.'
+            }
+        };
+
+        let currentLang = 'en';
+        let detectedFiles = {};
+
+        // ============ LANGUAGE SWITCH ============
+        function setLanguage(lang) {
+            currentLang = lang;
+            const s = strings[lang];
+            
+            // Update UI text
+            document.getElementById('subtitle').textContent = s.subtitle;
+            document.getElementById('hintTitle').innerHTML = s.hintTitle;
+            document.getElementById('hintText').innerHTML = s.hintText;
+            document.getElementById('setPathBtn').textContent = s.setPathBtn;
+            document.getElementById('cleanLabel').textContent = s.cleanLabel;
+            document.getElementById('createBtn').textContent = s.createBtn;
+            document.getElementById('detectBtn').textContent = s.detectBtn;
+            document.getElementById('pasteBtn').textContent = s.pasteBtn;
+            document.getElementById('clearBtn').textContent = s.clearBtn;
+            document.getElementById('filesLabel').textContent = s.filesLabel;
+            document.getElementById('foldersLabel').textContent = s.foldersLabel;
+            document.getElementById('charsLabel').textContent = s.charsLabel;
+            document.getElementById('waitingFiles').textContent = s.waitingFiles;
+            document.getElementById('statusReady').textContent = s.statusReady;
+            document.getElementById('codeInput').placeholder = s.pastePrompt;
+            
+            // Update language buttons
+            document.getElementById('langEn').className = lang === 'en' ? 'lang-btn active' : 'lang-btn';
+            document.getElementById('langRu').className = lang === 'ru' ? 'lang-btn active' : 'lang-btn';
+            
+            // Re-detect files to update logs
+            if (document.getElementById('codeInput').value.trim()) {
+                detectFiles();
+            }
+        }
+
+        // ============ LOGGING ============
+        function log(message, type = 'info') {
+            const status = document.getElementById('status');
+            const time = new Date().toLocaleTimeString();
+            const emoji = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️',
+                file: '📄'
+            };
+            status.innerHTML += `<div class="${type}">${emoji[type] || '•'} [${time}] ${message}</div>`;
+            status.scrollTop = status.scrollHeight;
+        }
+
+        function getLangString(key) {
+            return strings[currentLang][key] || key;
+        }
+
+        // ============ CLEANER ============
+        function aggressiveClean(content) {
+            let cleaned = content;
+            cleaned = cleaned.replace(/^[-]{3,}\s*$/gm, '');
+            cleaned = cleaned.replace(/^```\w*\s*\n?/gm, '');
+            cleaned = cleaned.replace(/\n?```\s*$/gm, '');
+            cleaned = cleaned.replace(/^["']|["']$/g, '');
+            cleaned = cleaned.replace(/^\s*\n/, '');
+            cleaned = cleaned.replace(/\n\s*$/, '');
+            cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+            cleaned = cleaned.replace(/[ \t]+$/gm, '');
+            cleaned = cleaned.replace(/^```.*$/gm, '');
+            return cleaned.trim();
+        }
+
+        // ============ DETECT FILES ============
+        function detectFiles() {
+            const text = document.getElementById('codeInput').value;
+            if (!text.trim()) {
+                log(getLangString('logNoText'), 'warning');
+                return;
+            }
+
+            detectedFiles = {};
+            const removeMarkdown = document.getElementById('removeMarkdown').checked;
+            
+            // Split by ## File N: or ## Файл N:
+            const parts = text.split(/##\s*(?:File|Файл)\s*\d+:\s*/);
+            
+            for (let i = 1; i < parts.length; i++) {
+                const part = parts[i];
+                const lines = part.split('\n');
+                let filePath = lines[0].trim();
+                if (!filePath) continue;
+                
+                let content = lines.slice(1).join('\n');
+                
+                if (removeMarkdown) {
+                    content = aggressiveClean(content);
+                }
+                
+                if (content && !content.match(/^[-]{3,}$/)) {
+                    detectedFiles[filePath] = content;
+                    const s = getLangString('logFileFound');
+                    log(`${s} ${filePath} (${content.length} ${getLangString('logPreview')})`, 'file');
+                }
+            }
+            
+            // Alternative: code blocks with comments
+            if (Object.keys(detectedFiles).length === 0) {
+                const codeBlocks = text.match(/```(\w+)\n([\s\S]*?)```/g);
+                if (codeBlocks) {
+                    let counter = 1;
+                    for (const block of codeBlocks) {
+                        const lines = block.split('\n');
+                        let filePath = null;
+                        let content = [];
+                        
+                        for (const line of lines) {
+                            const pathMatch = line.match(/(?:#|\/\/)\s*(?:file|filename|path):\s*([^\s]+)/);
+                            if (pathMatch) {
+                                filePath = pathMatch[1];
+                                continue;
+                            }
+                            if (!line.match(/^```/)) {
+                                content.push(line);
+                            }
+                        }
+                        
+                        if (filePath && content.length > 0) {
+                            let cleanedContent = content.join('\n');
+                            if (removeMarkdown) {
+                                cleanedContent = aggressiveClean(cleanedContent);
+                            }
+                            detectedFiles[filePath] = cleanedContent;
+                            const s = getLangString('logFileFound');
+                            log(`${s} ${filePath}`, 'file');
+                        } else if (content.length > 0) {
+                            const extMatch = block.match(/```(\w+)/);
+                            if (extMatch) {
+                                const ext = extMatch[1];
+                                let cleanedContent = content.join('\n');
+                                if (removeMarkdown) {
+                                    cleanedContent = aggressiveClean(cleanedContent);
+                                }
+                                detectedFiles[`file_${counter}.${ext}`] = cleanedContent;
+                                counter++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (Object.keys(detectedFiles).length === 0) {
+                log(getLangString('logWrongFormat'), 'error');
+                log(getLangString('logExample'), 'info');
+            }
+
+            updateUI();
+            const s = getLangString('logDetected');
+            log(`${Object.keys(detectedFiles).length} ${s}`, 'success');
+        }
+
+        // ============ UPDATE UI ============
+        function updateUI() {
+            const tree = document.getElementById('fileTree');
+            let html = '<div class="folder">📁 my_project/</div>';
+            const folders = new Set();
+            let totalChars = 0;
+            
+            for (const [path, content] of Object.entries(detectedFiles)) {
+                const parts = path.split('/');
+                const fileName = parts.pop();
+                const folderPath = parts.join('/');
+                if (folderPath) folders.add(folderPath);
+                
+                const indent = 20 + parts.length * 20;
+                const size = content.length;
+                totalChars += size;
+                html += `<div style="margin-left: ${indent}px;" class="file">📄 ${fileName} <span class="size">(${size} chars)</span></div>`;
+            }
+            
+            document.getElementById('fileCount').textContent = Object.keys(detectedFiles).length;
+            document.getElementById('folderCount').textContent = folders.size;
+            document.getElementById('charCount').textContent = totalChars.toLocaleString();
+            
+            if (Object.keys(detectedFiles).length === 0) {
+                html += `<div class="empty">${getLangString('noFiles')}</div>`;
+            }
+            
+            tree.innerHTML = html;
+        }
+
+        // ============ SAVE FILES ============
+        async function saveFiles() {
+            detectFiles();
+            
+            if (Object.keys(detectedFiles).length === 0) {
+                log(getLangString('logNoFiles'), 'error');
+                return;
+            }
+
+            const basePath = document.getElementById('basePath').value.trim();
+            const s = getLangString('logSaving');
+            const filesTo = getLangString('logFilesTo');
+            log(`${s} ${Object.keys(detectedFiles).length} ${filesTo} ${basePath}...`, 'info');
+
+            try {
+                const response = await fetch('/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        base_path: basePath,
+                        files: detectedFiles
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const created = getLangString('logCreated');
+                    const of = getLangString('logOf');
+                    log(`${created} ${result.created} ${of} ${result.total} ${getLangString('logDetected')}`, 'success');
+                    
+                    for (const file of result.files) {
+                        log(`✅ ${file}`, 'success');
+                    }
+                    
+                    if (result.errors.length > 0) {
+                        for (const err of result.errors) {
+                            log(`❌ ${err}`, 'error');
+                        }
+                    }
+                    
+                    if (result.created === result.total) {
+                        log(getLangString('logAllCreated'), 'success');
+                        log(`${getLangString('logCheckFolder')} ${basePath}`, 'info');
+                    }
+                } else {
+                    log(getLangString('logServerError'), 'error');
+                }
+            } catch (error) {
+                log(`${getLangString('logError')} ${error.message}`, 'error');
+                log(getLangString('logStartServer'), 'warning');
+            }
+        }
+
+        // ============ CLIPBOARD ============
+        async function pasteClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('codeInput').value = text;
+                log(getLangString('logPasteSuccess'), 'success');
+                detectFiles();
+            } catch (error) {
+                log(`${getLangString('logPasteError')}: ${error.message}`, 'error');
+                log(getLangString('logPasteHint'), 'warning');
+            }
+        }
+
+        // ============ UTILITIES ============
+        function setPath() {
+            const path = document.getElementById('basePath').value.trim();
+            log(`${getLangString('logPathSet')} ${path}`, 'info');
+        }
+
+        function clearAll() {
+            document.getElementById('codeInput').value = '';
+            detectedFiles = {};
+            document.getElementById('fileTree').innerHTML = `<div class="folder">📁 my_project/</div><div class="empty">${getLangString('waitingFiles')}</div>`;
+            document.getElementById('status').innerHTML = `<div class="info">${getLangString('statusReady')}</div>`;
+            document.getElementById('fileCount').textContent = '0';
+            document.getElementById('folderCount').textContent = '0';
+            document.getElementById('charCount').textContent = '0';
+            log(getLangString('logCleared'), 'info');
+        }
+
+        // ============ AUTO-DETECT ============
+        document.getElementById('codeInput').addEventListener('input', function() {
+            clearTimeout(this._timer);
+            this._timer = setTimeout(() => {
+                if (this.value.length > 100) {
+                    detectFiles();
+                }
+            }, 1000);
+        });
+
+        // ============ INIT ============
+        // Set English as default
+        setLanguage('en');
+        log(getLangString('logReady'), 'info');
+        log('🧹 ' + getLangString('logCleaning'), 'info');
+    </script>
+</body>
+</html>
