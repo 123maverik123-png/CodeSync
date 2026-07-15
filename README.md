@@ -22,4 +22,23 @@ Just:
 ```bash
 git clone https://github.com/your-username/codesync.git
 cd codesync
+```
 
+### Run
+```bash
+python server.py
+```
+
+Usage
+
+  1.  Open browser: http://localhost:8000
+
+  2.  Copy the entire AI response from chat
+
+  3.  Paste it into the text field
+
+  4.  Click "🔍 Detect Files" to preview
+
+  Click "💾 CREATE FILES"
+
+Done! All files are created on your computer!
